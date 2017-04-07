@@ -6,6 +6,7 @@
 #include <sys/time.h>           /* timeval{} for select() */
 #include <sys/select.h>         /* select()               */
 #include <poll.h>               /* poll()                 */
+#include <sys/epoll.h>              /* epoll()                */
 #include <sys/stropts.h>
 #include <time.h>               /* timespec{} for pselect() */
 #include <netinet/in.h>         /* sockaddr_in{} and other Internet defns */
@@ -25,6 +26,7 @@ extern ssize_t writen(int filedes, const void *buff, size_t nbytes);
 extern ssize_t readline(int filedes, void *buff, size_t maxlen);
 
 const long MaxOpen = 1024;
+const long MaxEpoll = 1024;
 //template<typename T>
 inline long max(const long a, const long b)
 {

@@ -51,8 +51,71 @@ int main(int argv, char* argc[])
 		printf("listen error!\r\n");
 		exit(1);
 	}
+	/* epoll */
+	int epollfd = epoll_create(0);
+	printf("epoll fd = %d\r\n", epollfd);
+	/*struct epoll_event{
+	__unit32_t events; // 要注册的事件,与poll基本相同,增加E.epoll新增两个事件EPOLLET和EPOLLONESHOT
+	epoll_data_t data;
+	};*/
+	struct epoll_event lsevent;
+	lsevent.events = EPOLLIN;
+	lsevent.data.fd = listenfd;
+	epoll_ctl(epollfd, EPOLL_CTL_ADD, listenfd, &lsevent);
+	struct epoll_event events[MaxEpoll];
+	int max = 1;
+	for(;;)
+	{
+		int ret = epoll_wait(epollfd, &events, max+1, -1);
+		if(ret < 0)
+		{
+			printf("epoll_wait error!\r\n");
+			exit(1);
+		}
+		printf("%d 个描述就绪\r\n", ret);
+		for(i = 0; i<ret; i++)
+		{
+			int sockfd = events[i].data.fd;
+			if(sockfd == listenfd)
+			{
+				int len = sizeof(cliaddr);
+				char cliip[64];
+				memset(cliip, 0x0, sizeof(cliip));
+				int sockcli = accept(sockfd, (struct sockaddr*)&cliaddr, &len);
+				if(sockcli < 0)
+				{
+					printf("accept error!\r\n");
+					exit(1);
+				}
+				inet_ntop(AF_INET, &cliaddr.sin_addr, cliip, sizeof(cliip));
+				int nPort = ntohs(cliaddr.sin_port);
+				printf("accept from IP:%s, Port:%d", cliip, nPort);
+				struct epoll_event clievent;
+				clievent.events = EPOLLIN;
+				clievent.data.fd = sockcli;
+				epoll_ctl(epollfd, EPOLL_CTL_ADD, sockcli, &clievent);
+				max += 1;
+			}else
+			{
+				if(events[i].events & EPOLLIN)
+				{
+					printf("EPOLLIN...\r\n");
+					memset(buf, 0x0, sizeof(buf));
+					int nret = read(sockfd, buf, sizeof(buf));
+					if(nret <= 0)
+					{
+						close(sockfd);
+						continue;
+					}
+					write(sockfd, buf, nret);
+				}
+			}
+		}
+		
+	}
+	/* epoll */
 	/* poll */
-	client[0].fd = listenfd;
+	/*client[0].fd = listenfd;
 	client[0].events = POLLIN;
 	for(i = 1; i<MaxOpen; i++)
 	{
@@ -123,7 +186,7 @@ int main(int argv, char* argc[])
 					break;
 			}
 		}
-	}
+	}*/
 	/* select */
 /*	for(i; i<FD_SETSIZE; i++)
 	{
