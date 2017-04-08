@@ -27,7 +27,7 @@ int main(int argv, char* argc[])
 //	int client[FD_SETSIZE];
 	int maxfd, nready;
 	int i = 0;
-	int max = 0;
+//	int max = 0;
 	struct pollfd client[MaxOpen];
 	fd_set allset, reset;
 	struct sockaddr_in servaddr, cliaddr;
@@ -52,7 +52,7 @@ int main(int argv, char* argc[])
 		exit(1);
 	}
 	/* epoll */
-	int epollfd = epoll_create(0);
+	int epollfd = epoll_create(MaxEpoll);
 	printf("epoll fd = %d\r\n", epollfd);
 	/*struct epoll_event{
 	__unit32_t events; // 要注册的事件,与poll基本相同,增加E.epoll新增两个事件EPOLLET和EPOLLONESHOT
@@ -66,7 +66,7 @@ int main(int argv, char* argc[])
 	int max = 1;
 	for(;;)
 	{
-		int ret = epoll_wait(epollfd, &events, max+1, -1);
+		int ret = epoll_wait(epollfd, events, max+1, -1);
 		if(ret < 0)
 		{
 			printf("epoll_wait error!\r\n");
@@ -104,6 +104,7 @@ int main(int argv, char* argc[])
 					int nret = read(sockfd, buf, sizeof(buf));
 					if(nret <= 0)
 					{
+						printf("a client close!\r\n");
 						close(sockfd);
 						continue;
 					}
