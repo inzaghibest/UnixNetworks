@@ -1,0 +1,10 @@
+INC = -I ../public
+
+UdpClient : UdpClient.o
+	cc -o UdpClient UdpClient.o
+UdpClient.o : UdpClient.c
+	cc -c $(INC) UdpClient.c
+
+clean:
+	rm -rf UdpClient UdpClient.o
+

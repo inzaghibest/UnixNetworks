@@ -1,0 +1,9 @@
+INC=-I ../public/
+
+UdpServer:UdpServer.o
+	cc -g -o  UdpServer UdpServer.o
+UdpServer.o:UdpServer.c
+	cc -g -c $(INC) UdpServer.c
+clean:
+	rm -rf UdpServer UdpServer.o
+
